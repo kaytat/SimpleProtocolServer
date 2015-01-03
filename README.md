@@ -12,6 +12,9 @@ The code is a simple modification to an existing MSDN example: http://blogs.msdn
 
 ## Limitations
 
+### One client only
+Although PulseAudio's module will allow multiple connections, this server does not.
+
 ### No XP support
 I've only tested this with one Win7 machine.  And it doesn't seem to work with XP.
 
