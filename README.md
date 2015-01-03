@@ -13,3 +13,6 @@ The code is a simple modification to an existing MSDN example: http://blogs.msdn
 It looks like the sampling frequency can't be changed in for loopback, and so the data is 2 channel, 16 bit PCM at 48kHz.
 
 And unfortunately, the current Android app doesn't support it.  It's been worked on.
+
+## Limitations
+I've only tested this with one Win7 machine.  And it doesn't seem to work with XP.
