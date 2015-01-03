@@ -18,4 +18,4 @@ I've only tested this with one Win7 machine.  And it doesn't seem to work with X
 ### Sampling rate / format
 The Android app will support two sampling frequencies - 44.1 and 48 kHz, just in case the sound card doesn't support one of them.  The app will assume 16 bit, 2 channel PCM.
 
-The sampling rate may need to be manually adjusted by the user since the default format may not be a format supported by the Android app.  To do this, the user will need to manually configure the properties in the "Advanced" tab of the playback device.
+The sampling rate may need to be manually adjusted by the user since the default format may not be a format supported by the Android app.  To do this, the user will need to manually configure the properties in the "Advanced" tab of the playback device.  Please also see this: http://kaytat.com/blog/?p=332
