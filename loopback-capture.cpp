@@ -258,9 +258,11 @@ HRESULT LoopbackCapture(
                 return hr;
             }
 
+#ifdef _DEBUG
             if (0 != dwFlags) {
                 printf("[ignoring] IAudioCaptureClient::GetBuffer set flags to 0x%08x on pass %u after %u frames\n", dwFlags, nPasses, *pnFrames);
             }
+#endif
 
             if (0 == nNumFramesToRead) {
                 printf("IAudioCaptureClient::GetBuffer said to read 0 frames on pass %u after %u frames\n", nPasses, *pnFrames);
