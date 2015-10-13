@@ -14,6 +14,8 @@ class CPrefs {
 public:
     IMMDevice *m_pMMDevice;
     bool m_bInt16;
+    bool m_bMono;
+    int m_iSampleRateDivisor;
     PWAVEFORMATEX m_pwfx;
 
     // set hr to S_FALSE to abort but return success

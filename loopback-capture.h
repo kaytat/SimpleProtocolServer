@@ -24,6 +24,8 @@ struct LoopbackCaptureThreadFunctionArguments {
     HANDLE hStopEvent;
     UINT32 nFrames;
     HRESULT hr;
+    bool bMono;
+    INT32 iSampleRateDivisor;
 };
 
 DWORD WINAPI LoopbackCaptureThreadFunction(LPVOID pContext);

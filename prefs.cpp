@@ -18,35 +18,33 @@
 
 #include "prefs.h"
 
-#define DEFAULT_FILE L"loopback-capture.wav"
-
 void usage(LPCWSTR exe);
 HRESULT get_default_device(IMMDevice **ppMMDevice);
 HRESULT list_devices();
 HRESULT get_specific_device(LPCWSTR szLongName, IMMDevice **ppMMDevice);
-HRESULT open_file(LPCWSTR szFileName, HMMIO *phFile);
 
 void usage(LPCWSTR exe) {
     printf(
         "%ls -?\n"
         "%ls --list-devices\n"
-        "%ls [--device \"Device long name\"] [--file \"file name\"] [--int-16]\n"
+        "%ls [--device \"Device long name\"] [--mono] [--div divisor]\n"
         "\n"
         "    -? prints this message.\n"
         "    --list-devices displays the long names of all active playback devices.\n"
         "    --device captures from the specified device (default if omitted)\n"
-        "    --file saves the output to a file (%ls if omitted)\n"
-        "    --int-16 attempts to coerce data to 16-bit integer format\n",
-        exe, exe, exe, DEFAULT_FILE
+        "    --mono convert from stereo to mono\n",
+        "    --div divisor reduce sample rate by a factor of divisor\n",
+        exe, exe, exe
     );
 }
 
 CPrefs::CPrefs(int argc, LPCWSTR argv[], HRESULT &hr)
 : m_pMMDevice(NULL)
 , m_bInt16(true)
+, m_bMono(false)
+, m_iSampleRateDivisor(1)
 , m_pwfx(NULL)
 {
-
     switch (argc) {
         case 2:
             if (0 == _wcsicmp(argv[1], L"-?") || 0 == _wcsicmp(argv[1], L"/?")) {
@@ -101,6 +99,24 @@ CPrefs::CPrefs(int argc, LPCWSTR argv[], HRESULT &hr)
                     }
 
                     m_bInt16 = true;
+                    continue;
+                }
+
+                // --mono
+                if (0 == _wcsicmp(argv[i], L"--mono")) {
+                    m_bMono = true;
+                    continue;
+                }
+
+                // --div divisor
+                if (0 == _wcsicmp(argv[i], L"--div")) {
+                    if (i++ == argc) {
+                        printf("--div switch requires an argument\n");
+                        hr = E_INVALIDARG;
+                        return;
+                    }
+
+                    m_iSampleRateDivisor = _wtoi(argv[i]);
                     continue;
                 }
 
@@ -342,25 +358,6 @@ HRESULT get_specific_device(LPCWSTR szLongName, IMMDevice **ppMMDevice) {
     if (NULL == *ppMMDevice) {
         printf("Could not find a device named %ls\n", szLongName);
         return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
-    }
-
-    return S_OK;
-}
-
-HRESULT open_file(LPCWSTR szFileName, HMMIO *phFile) {
-    MMIOINFO mi = {0};
-
-    *phFile = mmioOpen(
-        // some flags cause mmioOpen write to this buffer
-        // but not any that we're using
-        const_cast<LPWSTR>(szFileName),
-        &mi,
-        MMIO_WRITE | MMIO_CREATE
-    );
-
-    if (NULL == *phFile) {
-        printf("mmioOpen(\"%ls\", ...) failed. wErrorRet == %u\n", szFileName, mi.wErrorRet);
-        return E_FAIL;
     }
 
     return S_OK;

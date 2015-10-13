@@ -76,6 +76,8 @@ int do_everything(int argc, LPCWSTR argv[]) {
     threadArgs.hStartedEvent = hStartedEvent;
     threadArgs.hStopEvent = hStopEvent;
     threadArgs.nFrames = 0;
+    threadArgs.bMono = prefs.m_bMono;
+    threadArgs.iSampleRateDivisor = prefs.m_iSampleRateDivisor;
 
     HANDLE hThread = CreateThread(
         NULL, 0,

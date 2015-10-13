@@ -16,17 +16,48 @@ class SimpleTcpServer {
 public:
     SimpleTcpServer() :
         listenSocket(INVALID_SOCKET),
-        clientSocket(INVALID_SOCKET) {
+        clientSocket(INVALID_SOCKET),
+        mono(true),
+        sampleRateDivisor(1),
+        divisorCounter(0),
+        bufferSize(0),
+        scratchBuffer(NULL) {
+    }
+
+    ~SimpleTcpServer() {
+        if (scratchBuffer != NULL) {
+            delete scratchBuffer;
+            scratchBuffer = NULL;
+        }
     }
 
     int setup();
     int waitForClient();
+    void configure(
+        bool mono,
+        unsigned int sampleRateDivisor,
+        int bufferSize) {
+        this->mono = mono;
+        if (sampleRateDivisor >= 1) {
+            this->sampleRateDivisor = sampleRateDivisor;
+        }
+        else {
+            this->sampleRateDivisor = 1;
+        }
+        this->divisorCounter = 0;
+        this->bufferSize = bufferSize;
+        this->scratchBuffer = new short[bufferSize / 2];
+    }
     int sendData(const char* buf, int length);
     int shutdown();
 
 private:
     SOCKET listenSocket;
     SOCKET clientSocket;
-
+    bool mono;
+    unsigned int sampleRateDivisor;
+    unsigned int divisorCounter;
+    int bufferSize;
+    short* scratchBuffer;
     void dumpLocalIp();
 };

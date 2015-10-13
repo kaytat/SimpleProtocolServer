@@ -25,7 +25,9 @@ HRESULT LoopbackCapture(
     bool bInt16,
     HANDLE hStartedEvent,
     HANDLE hStopEvent,
-    PUINT32 pnFrames
+    PUINT32 pnFrames,
+    bool bMono,
+    INT32 iSampleRateDivisor
 );
 
 DWORD WINAPI LoopbackCaptureThreadFunction(LPVOID pContext) {
@@ -43,7 +45,9 @@ DWORD WINAPI LoopbackCaptureThreadFunction(LPVOID pContext) {
         pArgs->bInt16,
         pArgs->hStartedEvent,
         pArgs->hStopEvent,
-        &pArgs->nFrames
+        &pArgs->nFrames,
+        pArgs->bMono,
+        pArgs->iSampleRateDivisor
     );
 
     CoUninitialize();
@@ -55,8 +59,10 @@ HRESULT LoopbackCapture(
     bool bInt16,
     HANDLE hStartedEvent,
     HANDLE hStopEvent,
-    PUINT32 pnFrames
-) {
+    PUINT32 pnFrames,
+    bool bMono,
+    INT32 iSampleRateDivisor
+    ) {
     HRESULT hr;
     SimpleTcpServer server;
 
@@ -145,8 +151,9 @@ HRESULT LoopbackCapture(
     }
 
     UINT32 nBlockAlign = pwfx->nBlockAlign;
+    UINT32 nBufferSize;
     *pnFrames = 0;
-    
+
     // call IAudioClient::Initialize
     // note that AUDCLNT_STREAMFLAGS_LOOPBACK and AUDCLNT_STREAMFLAGS_EVENTCALLBACK
     // do not work together...
@@ -164,6 +171,22 @@ HRESULT LoopbackCapture(
         return hr;
     }
     CoTaskMemFree(pwfx);
+
+    // Get the buffer size
+    hr = pAudioClient->GetBufferSize(&nBufferSize);
+    if (FAILED(hr)) {
+        printf("IAudioClient::GetBufferSize failed: hr = 0x%08x\n", hr);
+        CloseHandle(hWakeUp);
+        pAudioClient->Release();
+        return hr;
+    }
+
+    // Configure the server.  The buffer size returned is in frames
+    // so assume stereo, 16 bits per sample to convert from frames to bytes
+    server.configure(
+        bMono,
+        iSampleRateDivisor,
+        nBufferSize * 2 * 2);
 
     // activate an IAudioCaptureClient
     IAudioCaptureClient *pAudioCaptureClient;

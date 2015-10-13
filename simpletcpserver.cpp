@@ -15,6 +15,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "simpletcpserver.h"
 
 // Need to link with Ws2_32.lib
@@ -126,16 +127,85 @@ int SimpleTcpServer::waitForClient()
     return 0;
 }
 
+#define PI 3.14159265
+
+// A utility to generate a sine wave.  For testing.
+short getSineSample()
+{
+    static int sineCounter = 0;
+    double rad, result;
+
+    rad = sineCounter++;
+
+    // Assuming an output rate of 48khz, this should
+    // generate a 1khz sine tone
+    rad = fmod(rad, 48.0);
+    rad = rad * 2.0 * PI;
+    result = sin(rad);
+
+    // sin's range is [-1,+1] scale that to something close to
+    // the range of a short.
+    return (short)(result * 32000.0);
+}
+
 int SimpleTcpServer::sendData(const char* buf, int length)
 {
     int iSendResult;
+    short* bufferToSend;
+    short* tmpBuffer;
+    int samplesToSend = 0;
+    int numCaptureSamples = length / 2;
+    const short* captureSamples = (const short*)buf;
 
-    if (buf == NULL || length == 0) {
-        return 0;
+    // Super-simple stereo to mono conversion by averaging the left and right sample
+    if (mono || sampleRateDivisor != 1) {
+        if (length > bufferSize) {
+            printf("Error: capture buffer too large: %d %d\n", length, bufferSize);
+            return 0;
+        }
+
+        bufferToSend = (short*)scratchBuffer;
+        tmpBuffer = (short*)scratchBuffer;
+
+        int s1, s2;
+        while (numCaptureSamples > 0) {
+            numCaptureSamples -= 2;
+
+            // TODO: eliminate all these 'if's in loop
+            if (divisorCounter == 0) {
+                if (mono) {
+                    s1 = (*captureSamples++);
+                    s2 = (*captureSamples++);
+                    // Average left and right.  Assume 16 bits per sample, stereo
+                    *tmpBuffer++ = (short)((s1 + s2) / 2);
+                    samplesToSend++;
+                }
+                else {
+                    *tmpBuffer++ = *captureSamples++;
+                    *tmpBuffer++ = *captureSamples++;
+                    samplesToSend += 2;
+                }
+                if (sampleRateDivisor != 1) {
+                    divisorCounter++;
+                }
+            }
+            else {
+                // Skip 2 samples assuming stereo
+                captureSamples += 2;
+                divisorCounter++;
+                if (divisorCounter == sampleRateDivisor) {
+                    divisorCounter = 0;
+                }
+            }
+        }
+    }
+    else {
+        bufferToSend = (short*)buf;
+        samplesToSend = numCaptureSamples;
     }
 
     // Receive until the peer shuts down the connection
-    iSendResult = send( clientSocket, buf, length, 0 );
+    iSendResult = send(clientSocket, (char*)bufferToSend, samplesToSend * 2, 0);
     if (iSendResult == SOCKET_ERROR) {
         printf("send failed with error: %d\n", WSAGetLastError());
         closesocket(clientSocket);
