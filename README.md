@@ -4,6 +4,8 @@ This is a server that sends all the available sound card audio from a Windows PC
 
 The server is meant to be used with the Simple Protocol Player client on Android.  The play store link is here: https://play.google.com/store/apps/details?id=com.kaytat.simpleprotocolplayer .
 
+The client source is here: https://github.com/kaytat/SimpleProtocolPlayer
+
 ## WSAPI Loopback
 
 The server uses the Windows Audio Session API to capture the audio.  And for each audio frame, it sends that data to the connected client.
