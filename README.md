@@ -19,6 +19,8 @@ Although PulseAudio's module will allow multiple connections, this server does n
 I've only tested this with one Win7 machine.  And it doesn't seem to work with XP.
 
 ### Sampling rate / format
-The Android app will support two sampling frequencies - 44.1 and 48 kHz, just in case the sound card doesn't support one of them.  The app will assume 16 bit, 2 channel PCM.
+The Android app supports 4 sampling frequencies - 48, 44,1, 24, and 22.05kHz and both stereo and mono.  The app assumes 16-bit samples.
+
+My sound card doesn't support the lower sampling rates and so the server has a command line option to use an integer divider to downsample.
 
 The sampling rate may need to be manually adjusted by the user since the default format may not be a format supported by the Android app.  To do this, the user will need to manually configure the properties in the "Advanced" tab of the playback device.  Please also see this: http://kaytat.com/blog/?p=332
