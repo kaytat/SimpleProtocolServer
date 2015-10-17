@@ -32,7 +32,7 @@ void usage(LPCWSTR exe) {
         "    -? prints this message.\n"
         "    --list-devices displays the long names of all active playback devices.\n"
         "    --device captures from the specified device (default if omitted)\n"
-        "    --mono convert from stereo to mono\n",
+        "    --mono convert from stereo to mono\n"
         "    --div divisor reduce sample rate by a factor of divisor\n",
         exe, exe, exe
     );
